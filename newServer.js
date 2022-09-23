@@ -159,7 +159,7 @@ app.post("/quizapi/customer/update-details", checkAuth, (req, res) => {
     designation = designation || null;
     country = country || null;
     companyUrl = companyUrl || null;
-    db.query('UPDATE customers SET companyName = ?, customerName = ?, mobileNo = ?, designation = ?, country = ?, companyUrl = ? WHERE companyEmailId = ?', 
+    db.query('UPDATE customers SET companyName = ?, customerName = ?, mobileNo = ?, designation = ?, country = ?, companyUrl = ?, updatedOn = CURRENT_TIMESTAMP() WHERE companyEmailId = ?', 
     [companyName, customerName, mobileNo, designation, country, companyUrl, companyEmailId],
     (err) => {
         if(err) {
