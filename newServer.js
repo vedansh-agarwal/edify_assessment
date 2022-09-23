@@ -154,6 +154,23 @@ app.post("/quizapi/customer/send-details", checkAuth, (req, res) => {
     });
 });
 
+app.post("/quizapi/customer/update-details", checkAuth, (req, res) => {
+    var {customerName, companyName, mobileNo, companyEmailId, designation, country, companyUrl} = req.body;
+    designation = designation || null;
+    country = country || null;
+    companyUrl = companyUrl || null;
+    db.query('UPDATE customers SET companyName = ?, customerName = ?, mobileNo = ?, designation = ?, country = ?, companyUrl = ? WHERE companyEmailId = ?', 
+    [companyName, customerName, mobileNo, designation, country, companyUrl, companyEmailId],
+    (err) => {
+        if(err) {
+            console.log(err);
+            return res.status(299).json({message: "Database Error", errMsg: err.message});
+        } else {
+            return res.status(200).json({message: "Details updated"});
+        }
+    });
+});
+
 
 
 // Server Start
