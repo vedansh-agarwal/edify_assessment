@@ -52,6 +52,7 @@ function checkAuth(req, res, next) {
 // Imports for Routes
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
+const e = require("express");
 
 
 // Routes
@@ -63,7 +64,7 @@ app.post("quizapi/customer/generate-access-token", (req, res) => {
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
         email = decoded.email;
     } catch(err) {
-        return res.status(299).json({message: "Invalid Refresh Token"});
+        return res.status(299).json({message: "Invalid Refresh Token. Please Login again"});
     }
 
     db.query('SELECT refreshToken FROM customer WHERE email = ?', [email],
@@ -245,6 +246,98 @@ app.post("/quizapi/customer/update-details", checkAuth, (req, res) => {
         }
     });
 });
+
+app.post("/quizapi/user/add-question", (req, res) => {
+    var {sectionName, questionSeqNumber, questionDescription, choiceDetails, createdBy, questionHelp} = req.body;
+    questionDescription = JSON.stringify(questionDescription);
+    choiceDetails = JSON.stringify(choiceDetails);
+    questionHelp = questionHelp || null;
+    db.query("INSERT INTO questions (sectionName, questionSeqNumber, questionDescription, choiceDetails, createdBy, updatedBy, questionHelp) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [sectionName, questionSeqNumber, questionDescription, choiceDetails, createdBy, createdBy, questionHelp],
+    async (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(299).json({message: "Database Error", errMsg: err.message});
+        } else {
+            return res.status(200).json({message: "Question added successfully"});
+        }
+    });
+});
+
+app.post("/quizapi/user/update-question/:questionSeqNumber", (req, res) => {
+    var {questionSeqNumber} = req.params;
+    var {sectionName, questionDescription, choiceDetails, updatedBy, questionHelp} = req.body;
+
+    sectionName = sectionName || null;
+    questionDescription = questionDescription || null;
+    choiceDetails = choiceDetails || null;
+    questionHelp = questionHelp || null;
+
+    db.query("UPDATE questions SET sectionName = IFNULL(?, sectionName), questionDescription = IFNULL(?, questionDescription), choiceDetails = IFNULL(?, choiceDetails), updatedBy = ?, updatedOn = CURRENT_TIMESTAMP(), questionHelp = IFNULL(?, questionHelp) WHERE questionSeqNumber = ?",
+    [sectionName, questionDescription, choiceDetails, updatedBy, questionHelp, questionSeqNumber],
+    async (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(299).json({message: "Database Error", errMsg: err.message});
+        } else {
+            return res.status(200).json({message: "Question updated successfully"});
+        }
+    });
+});
+
+app.post("/quizapi/customer/get-questions-by-section", checkAuth, (req, res) => {
+    const {sectionName} = req.body;
+
+    db.query("SELECT * FROM questions WHERE sectionName = ?", [sectionName],
+    (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(299).json({message: "Database Error", errMsg: err.message});
+        } else {
+            return res.status(200).json({questions: result});
+        }
+    })
+});
+
+app.post("/quizapi/customer/logout", checkAuth, (req, res) => {
+    const {email, surveyAnswers, isComplete} = req.body;
+    var surveyCompleteFlag = isComplete? 1:0;
+
+    var check = false;
+
+    if(!isComplete) {
+        db.query("UPDATE customers SET refreshToken = null WHERE companyEmailId = ?", [email],
+        (err) => {
+            if(err) {
+                check = err;
+                console.log(err);
+            } 
+        });
+    }
+
+    if(check) return res.status(299).json({message: "Database Error", errMsg: check.message});
+
+    db.query("SELECT customerId from customers WHERE companyEmailId = ?", [email],
+    async (err, resp) => {
+        if(err) {
+            console.log(err);
+            return res.status(299).json({message: "Database Error", errMsg: err.message});
+        } else if(resp.length > 0){
+            db.query("INSERT INTO survey_answer (customerId, surveyAnswers, surveyEndDate, surveyCompleteFlag) VALUE (?, ?, "+(isComplete? "CURRENT_TIMESTAMP()":"null")+", ?)",
+            [resp[0].customerId, JSON.stringify(surveyAnswers), surveyCompleteFlag],
+            (err1, result) => {
+                if(err1) {
+                    console.log(err1);
+                    return res.status(299).json({message: "Database Error", errMsg: err1.message});
+                } else {
+                    return res.status(200).json({message: "Survey answers saved successfully"});
+                }
+            })
+        } else {
+            return res.status(201).json({message: "User not registered"});
+        }
+    })
+})
 
 
 
