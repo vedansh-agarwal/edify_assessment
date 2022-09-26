@@ -168,7 +168,7 @@ app.post("/quizapi/customer/verify-otp", (req, res) => {
                         return res.status(299).json({message: "Database Error", errMsg: err1.message});
                     } else {
                         if(!login) {
-                            return res.status(200).json({message: "OTP verified", accessToken: jwt.sign({email}, process.env.JWT_ACCESS_SECRET, {expiresIn: "20m"})});
+                            return res.status(200).json({message: "OTP verified"});
                         } else {
                             const refreshToken = jwt.sign({email}, process.env.JWT_REFRESH_SECRET, {expiresIn: "30d"});
                             db.query('UPDATE customers SET refreshToken = ? WHERE companyEmailId = ?', [refreshToken, email],
@@ -209,7 +209,7 @@ app.get("/quizapi/customer/get-details", checkAuth, (req, res) => {
     });
 });
 
-app.post("/quizapi/customer/enter-details", checkAuth, (req, res) => {
+app.post("/quizapi/customer/enter-details", (req, res) => {
     var {customerName, companyName, mobileNo, companyEmailId, designation, country, companyUrl} = req.body;
     designation = designation || null;
     country = country || null;
