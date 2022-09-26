@@ -33,16 +33,56 @@ const transporter = nodemailer.createTransport({
 
 // Middleware
 function checkAuth(req, res, next) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    if(token == null) return res.status(299).json({message: "Access Denied"});
+
+    var email;
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+        email = decoded.email;
+    } catch(err) {
+        return res.status(299).json({message: "Access Denied"});
+    }
+    req.body.email = email;
+    req.body.companyEmailId = email;
     next();
 }
 
 // Imports for Routes
 const { v4: uuidv4 } = require("uuid");
+const jwt = require("jsonwebtoken");
 
 
 // Routes
+app.post("quizapi/customer/generate-access-token", (req, res) => {
+    const {refreshToken} = req.body;
 
-app.post("/quizapi/customer/enter-email", checkAuth, (req, res) => {
+    var email;
+    try {
+        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        email = decoded.email;
+    } catch(err) {
+        return res.status(299).json({message: "Invalid Refresh Token"});
+    }
+
+    db.query('SELECT refreshToken FROM customer WHERE email = ?', [email],
+    async (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(299).json({message: "Database Error"});
+        } else {
+            if(result.length > 0 && result[0].refreshToken === refreshToken) {
+                const accessToken = jwt.sign({email}, process.env.JWT_ACCESS_SECRET, {expiresIn: "15m"});
+                return res.status(200).json({accessToken});
+            } else {
+                return res.status(299).json({message: "Invalid Refresh Token"});
+            }
+        }
+    });
+})
+
+app.post("/quizapi/customer/enter-email", (req, res) => {
     const {email} = req.body;
 
     db.query('SELECT registrationStatus FROM customers WHERE companyEmailId = ?', [email],
@@ -88,13 +128,30 @@ app.post("/quizapi/customer/enter-email", checkAuth, (req, res) => {
                 console.log(err);
                 return res.status(212).json({message: "Error in sending email."});
             }
-            return res.status(status).json({message: responseMessage});
+            if(status === 201) {
+                return res.status(status).json({message: responseMessage});
+            } else {
+                return res.status(status).json({message: responseMessage, token: jwt.sign({email}, process.env.JWT_LOGIN_SECRET, {expiresIn: "20m"})});
+            }
         }
     });
 });
 
-app.post("/quizapi/customer/verify-otp", checkAuth, (req, res) => {
-    const {email, otp} = req.body;
+app.post("/quizapi/customer/verify-otp", (req, res) => {
+    const {email, otp, token} = req.body;
+    var login = false;
+
+    if(token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_LOGIN_SECRET);
+            if(decoded.email !== email) {
+                return res.status(299).json({message: "Invalid Token"});
+            }
+        } catch(err) {
+            return res.status(299).json({message: "Invalid Token"});
+        }
+        login = true;
+    }
 
     db.query('SELECT * FROM customer_otp WHERE email = ? AND otp = ?', [email, otp],
     (err, result) => {
@@ -109,7 +166,21 @@ app.post("/quizapi/customer/verify-otp", checkAuth, (req, res) => {
                         console.log(err1);
                         return res.status(299).json({message: "Database Error", errMsg: err1.message});
                     } else {
-                        return res.status(200).json({message: "OTP verified"});
+                        if(!login) {
+                            return res.status(200).json({message: "OTP verified", token: jwt.sign({email}, process.env.JWT_ACCESS_SECRET, {expiresIn: "20m"})});
+                        } else {
+                            const refreshToken = jwt.sign({email}, process.env.JWT_REFRESH_SECRET, {expiresIn: "30d"});
+                            db.query('UPDATE customers SET refreshToken = ? WHERE companyEmailId = ?', [refreshToken, email],
+                            (err2) => {
+                                if(err2) {
+                                    console.log(err2);
+                                    return res.status(299).json({message: "Database Error", errMsg: err2.message});
+                                } else {
+                                    const accessToken = jwt.sign({email}, process.env.JWT_ACCESS_SECRET, {expiresIn: "15m"});
+                                    return res.status(200).json({message: "OTP verified", accessToken: accessToken, refreshToken: refreshToken});
+                                }
+                            });
+                        }
                     }
                 });
             } else {
@@ -119,7 +190,7 @@ app.post("/quizapi/customer/verify-otp", checkAuth, (req, res) => {
     });
 });
 
-app.post("/quizapi/customer/get-details", checkAuth, (req, res) => {
+app.get("/quizapi/customer/get-details", checkAuth, (req, res) => {
     const {email} = req.body;
 
     db.query('SELECT * FROM customers WHERE companyEmailId = ?', [email],
@@ -137,19 +208,23 @@ app.post("/quizapi/customer/get-details", checkAuth, (req, res) => {
     });
 });
 
-app.post("/quizapi/customer/send-details", checkAuth, (req, res) => {
+app.post("/quizapi/customer/enter-details", checkAuth, (req, res) => {
     var {customerName, companyName, mobileNo, companyEmailId, designation, country, companyUrl} = req.body;
     designation = designation || null;
     country = country || null;
     companyUrl = companyUrl || null;
-    db.query('INSERT INTO customers (customerId, companyEmailId, companyName, customerName, mobileNo, designation, country, registrationStatus, companyUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-    [uuidv4(), companyEmailId, companyName, customerName, mobileNo, designation, country, 2, companyUrl],
+
+    const refreshToken = jwt.sign({email: companyEmailId}, process.env.JWT_REFRESH_SECRET, {expiresIn: "30d"});
+    const accessToken = jwt.sign({email: companyEmailId}, process.env.JWT_ACCESS_SECRET, {expiresIn: "15m"});
+
+    db.query('INSERT INTO customers (customerId, companyEmailId, companyName, customerName, mobileNo, designation, country, registrationStatus, companyUrl, refreshToken) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+    [uuidv4(), companyEmailId, companyName, customerName, mobileNo, designation, country, 2, companyUrl, refreshToken],
     (err) => {
         if(err) {
             console.log(err);
             return res.status(299).json({message: "Database Error", errMsg: err.message});
         } else {
-            return res.status(200).json({message: "Details registered"});
+            return res.status(200).json({message: "Details registered", accessToken: accessToken, refreshToken: refreshToken});
         }
     });
 });
