@@ -17,6 +17,7 @@ CREATE TABLE `tempdb`.`customers` (
   `surveyStatus` VARCHAR(100) NOT NULL DEFAULT 'Pending',
   `registrationStatus` INT NOT NULL DEFAULT 0,
   `companyUrl` VARCHAR(200) DEFAULT NULL,
+  `refreshToken` VARCHAR(300) NOT NULL,
   PRIMARY KEY (`id`));
   
 CREATE TABLE `tempdb`.`customer_otp` (
