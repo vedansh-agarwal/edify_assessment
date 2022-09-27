@@ -35,8 +35,7 @@ DELIMITER ;
 
 CREATE TABLE `tempdb`.`questions` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `sectionName` VARCHAR(20) NOT NULL,
-  `questionSeqNumber` VARCHAR(45) NOT NULL UNIQUE,
+  `sectionName` VARCHAR(200) NOT NULL,
   `questionDescription` JSON NOT NULL,
   `choiceDetails` JSON NOT NULL,
   `createdOn` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
