@@ -337,8 +337,7 @@ app.post("/quizapi/customer/logout", checkAuth, (req, res) => {
             return res.status(201).json({message: "User not registered"});
         }
     })
-})
-
+});
 
 
 // Server Start
