@@ -67,7 +67,7 @@ app.post("/quizapi/customer/generate-access-token", (req, res) => {
         return res.status(299).json({message: "Invalid Refresh Token. Please Login again"});
     }
 
-    db.query('SELECT refreshToken FROM customer WHERE email = ?', [email],
+    db.query('SELECT refreshToken FROM customers WHERE companyEmailId = ?', [email],
     async (err, result) => {
         if(err) {
             console.log(err);
@@ -152,15 +152,15 @@ app.post("/quizapi/customer/verify-otp", (req, res) => {
         } else {
             var refreshToken = jwt.sign({email}, process.env.JWT_REFRESH_SECRET, {expiresIn: "30d"});
             var accessToken = jwt.sign({email}, process.env.JWT_ACCESS_SECRET, {expiresIn: "15m"});
-            db.query('UPDATE customers SET refreshToken = ? WHERE companyEmailId = ?', [refreshToken, email],
-            (err1) => {
-                if(err1) {
-                    db.query('INSERT INTO customers (customerId, companyEmailId, companyName, customerName, mobileNo, designation, country, registrationStatus, companyUrl, refreshToken)',
-                    [uuidv4(), email, "", "", "", "", "", 0, "", refreshToken],
-                    (err2) => {
-                        if(err2) {
-                            console.log(err2);
-                        } 
+            db.query('INSERT INTO customers (customerId, companyEmailId, companyName, customerName, mobileNo, designation, country, registrationStatus, companyUrl, refreshToken) VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [uuidv4(), email, "", "", "", "", "", 0, "", refreshToken],
+            (err2, res2) => {
+                if(err2) {
+                    db.query('UPDATE customers SET refreshToken = ? WHERE companyEmailId = ?', [refreshToken, email],
+                    (err1, res1) => {
+                        if(err1) {
+                            console.log(err1);
+                        }
                     });
                 }
             });
@@ -218,9 +218,6 @@ app.post("/quizapi/customer/enter-details", checkAuth, (req, res) => {
     country = country || null;
     companyUrl = companyUrl || null;
 
-    const refreshToken = jwt.sign({email: companyEmailId}, process.env.JWT_REFRESH_SECRET, {expiresIn: "30d"});
-    const accessToken = jwt.sign({email: companyEmailId}, process.env.JWT_ACCESS_SECRET, {expiresIn: "15m"});
-
     db.query('UPDATE customers SET companyName = ?, customerName = ?, mobileNo = ?, designation = ?, country = ?, registrationStatus = ?, companyUrl = ? WHERE companyEmailId = ?', 
     [companyName, customerName, mobileNo, designation, country, 2, companyUrl, companyEmailId],
     (err) => {
@@ -251,12 +248,12 @@ app.post("/quizapi/customer/update-details", checkAuth, (req, res) => {
 });
 
 app.post("/quizapi/user/add-question", (req, res) => {
-    var {sectionName, questionSeqNumber, questionDescription, choiceDetails, createdBy, questionHelp} = req.body;
-    questionDescription = JSON.stringify(questionDescription);
+    var {sectionName, quesNo, questionDescription, choiceDetails, createdBy, questionHelp} = req.body;
+    questionDescription = JSON.stringify({quesNo: quesNo, questionDescription: questionDescription});
     choiceDetails = JSON.stringify(choiceDetails);
     questionHelp = questionHelp || null;
-    db.query("INSERT INTO questions (sectionName, questionSeqNumber, questionDescription, choiceDetails, createdBy, updatedBy, questionHelp) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [sectionName, questionSeqNumber, questionDescription, choiceDetails, createdBy, createdBy, questionHelp],
+    db.query("INSERT INTO questions (sectionName, questionDescription, choiceDetails, createdBy, updatedBy, questionHelp) VALUES (?, ?, ?, ?, ?, ?)",
+    [sectionName, questionDescription, choiceDetails, createdBy, createdBy, questionHelp],
     async (err, result) => {
         if(err) {
             console.log(err);
@@ -269,14 +266,22 @@ app.post("/quizapi/user/add-question", (req, res) => {
 
 app.post("/quizapi/user/update-question/:questionSeqNumber", (req, res) => {
     var {questionSeqNumber} = req.params;
-    var {sectionName, questionDescription, choiceDetails, updatedBy, questionHelp} = req.body;
+    var {sectionName, quesNo, questionDescription, choiceDetails, updatedBy, questionHelp} = req.body;
 
     sectionName = sectionName || null;
     questionDescription = questionDescription || null;
     choiceDetails = choiceDetails || null;
     questionHelp = questionHelp || null;
 
-    db.query("UPDATE questions SET sectionName = IFNULL(?, sectionName), questionDescription = IFNULL(?, questionDescription), choiceDetails = IFNULL(?, choiceDetails), updatedBy = ?, updatedOn = CURRENT_TIMESTAMP(), questionHelp = IFNULL(?, questionHelp) WHERE questionSeqNumber = ?",
+    if(questionDescription != null) {
+        questionDescription = JSON.stringify({quesNo: quesNo, questionDescription: questionDescription});
+    }
+
+    if(choiceDetails != null) {
+        choiceDetails = JSON.stringify(choiceDetails);
+    }
+
+    db.query("UPDATE questions SET sectionName = IFNULL(?, sectionName), questionDescription = IFNULL(?, questionDescription), choiceDetails = IFNULL(?, choiceDetails), updatedBy = ?, updatedOn = CURRENT_TIMESTAMP(), questionHelp = IFNULL(?, questionHelp) WHERE id = ?",
     [sectionName, questionDescription, choiceDetails, updatedBy, questionHelp, questionSeqNumber],
     async (err, result) => {
         if(err) {
