@@ -69,7 +69,7 @@ app.post("/quizapi/customer/generate-access-token", (req, res) => {
   }
 
   db.query(
-    "SELECT refreshToken FROM customer WHERE email = ?",
+    "SELECT refreshToken FROM customers WHERE companyEmailId = ?",
     [email],
     async (err, result) => {
       if (err) {
@@ -181,16 +181,16 @@ app.post("/quizapi/customer/verify-otp", (req, res) => {
           expiresIn: "15m",
         });
         db.query(
-          "UPDATE customers SET refreshToken = ? WHERE companyEmailId = ?",
-          [refreshToken, email],
-          (err1) => {
-            if (err1) {
+          "INSERT INTO customers (customerId, companyEmailId, companyName, customerName, mobileNo, designation, country, registrationStatus, companyUrl, refreshToken) VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          [uuidv4(), email, "", "", "", "", "", 0, "", refreshToken],
+          (err2, res2) => {
+            if (err2) {
               db.query(
-                "INSERT INTO customers (customerId, companyEmailId, companyName, customerName, mobileNo, designation, country, registrationStatus, companyUrl, refreshToken)",
-                [uuidv4(), email, "", "", "", "", "", 0, "", refreshToken],
-                (err2) => {
-                  if (err2) {
-                    console.log(err2);
+                "UPDATE customers SET refreshToken = ? WHERE companyEmailId = ?",
+                [refreshToken, email],
+                (err1, res1) => {
+                  if (err1) {
+                    console.log(err1);
                   }
                 }
               );
@@ -271,17 +271,6 @@ app.post("/quizapi/customer/enter-details", checkAuth, (req, res) => {
   country = country || null;
   companyUrl = companyUrl || null;
 
-  const refreshToken = jwt.sign(
-    { email: companyEmailId },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "30d" }
-  );
-  const accessToken = jwt.sign(
-    { email: companyEmailId },
-    process.env.JWT_ACCESS_SECRET,
-    { expiresIn: "15m" }
-  );
-
   db.query(
     "UPDATE customers SET companyName = ?, customerName = ?, mobileNo = ?, designation = ?, country = ?, registrationStatus = ?, companyUrl = ? WHERE companyEmailId = ?",
     [
@@ -347,20 +336,22 @@ app.post("/quizapi/customer/update-details", checkAuth, (req, res) => {
 app.post("/quizapi/user/add-question", (req, res) => {
   var {
     sectionName,
-    questionSeqNumber,
+    quesNo,
     questionDescription,
     choiceDetails,
     createdBy,
     questionHelp,
   } = req.body;
-  questionDescription = JSON.stringify(questionDescription);
+  questionDescription = JSON.stringify({
+    quesNo: quesNo,
+    questionDescription: questionDescription,
+  });
   choiceDetails = JSON.stringify(choiceDetails);
   questionHelp = questionHelp || null;
   db.query(
-    "INSERT INTO questions (sectionName, questionSeqNumber, questionDescription, choiceDetails, createdBy, updatedBy, questionHelp) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO questions (sectionName, questionDescription, choiceDetails, createdBy, updatedBy, questionHelp) VALUES (?, ?, ?, ?, ?, ?)",
     [
       sectionName,
-      questionSeqNumber,
       questionDescription,
       choiceDetails,
       createdBy,
@@ -384,6 +375,7 @@ app.post("/quizapi/user/update-question/:questionSeqNumber", (req, res) => {
   var { questionSeqNumber } = req.params;
   var {
     sectionName,
+    quesNo,
     questionDescription,
     choiceDetails,
     updatedBy,
@@ -395,8 +387,19 @@ app.post("/quizapi/user/update-question/:questionSeqNumber", (req, res) => {
   choiceDetails = choiceDetails || null;
   questionHelp = questionHelp || null;
 
+  if (questionDescription != null) {
+    questionDescription = JSON.stringify({
+      quesNo: quesNo,
+      questionDescription: questionDescription,
+    });
+  }
+
+  if (choiceDetails != null) {
+    choiceDetails = JSON.stringify(choiceDetails);
+  }
+
   db.query(
-    "UPDATE questions SET sectionName = IFNULL(?, sectionName), questionDescription = IFNULL(?, questionDescription), choiceDetails = IFNULL(?, choiceDetails), updatedBy = ?, updatedOn = CURRENT_TIMESTAMP(), questionHelp = IFNULL(?, questionHelp) WHERE questionSeqNumber = ?",
+    "UPDATE questions SET sectionName = IFNULL(?, sectionName), questionDescription = IFNULL(?, questionDescription), choiceDetails = IFNULL(?, choiceDetails), updatedBy = ?, updatedOn = CURRENT_TIMESTAMP(), questionHelp = IFNULL(?, questionHelp) WHERE id = ?",
     [
       sectionName,
       questionDescription,
