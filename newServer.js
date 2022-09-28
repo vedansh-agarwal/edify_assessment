@@ -423,28 +423,24 @@ app.post("/quizapi/user/update-question/:questionSeqNumber", (req, res) => {
   );
 });
 
-app.post(
-  "/quizapi/customer/get-questions-by-section",
-  checkAuth,
-  (req, res) => {
-    const { sectionName } = req.body;
+app.post("/quizapi/customer/get-questions-by-section", (req, res) => {
+  const { sectionName } = req.body;
 
-    db.query(
-      "SELECT * FROM questions WHERE sectionName = ?",
-      [sectionName],
-      (err, result) => {
-        if (err) {
-          console.log(err);
-          return res
-            .status(299)
-            .json({ message: "Database Error", errMsg: err.message });
-        } else {
-          return res.status(200).json({ questions: result });
-        }
+  db.query(
+    "SELECT * FROM questions WHERE sectionName = ?",
+    [sectionName],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(299)
+          .json({ message: "Database Error", errMsg: err.message });
+      } else {
+        return res.status(200).json({ questions: result });
       }
-    );
-  }
-);
+    }
+  );
+});
 
 app.post("/quizapi/customer/logout", checkAuth, (req, res) => {
   const { email, surveyAnswers, isComplete } = req.body;
