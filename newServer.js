@@ -56,7 +56,7 @@ const e = require("express");
 
 
 // Routes
-app.post("quizapi/customer/generate-access-token", (req, res) => {
+app.post("/quizapi/customer/generate-access-token", (req, res) => {
     const {refreshToken} = req.body;
 
     var email;
