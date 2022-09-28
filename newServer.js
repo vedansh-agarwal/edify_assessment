@@ -52,7 +52,6 @@ function checkAuth(req, res, next) {
 // Imports for Routes
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
-const e = require("express");
 
 // Routes
 app.post("/quizapi/customer/generate-access-token", (req, res) => {
@@ -503,6 +502,45 @@ app.post("/quizapi/customer/logout", checkAuth, (req, res) => {
       }
     }
   );
+});
+
+app.post("/get-customer-survey-progress", checkAuth, (req, res) => {
+  const {email} = req.body;
+  db.query("SELECT customerId FROM customers WHERE companyEmailId = ?", [email],
+  (err, result) => {
+    if(err) {
+      console.log(err);
+      return res.status(299).json({message: "Database error", errMsg: err.message});
+    } else {
+      const customer_id = result[0].customerId;
+      db.query("SELECT surveyAnswers FROM survey_answer WHERE customerId = ? ORDER BY surveyStartDate DESC LIMIT 1", [customer_id],
+      (err1, result1) => {
+        if(err1) {
+          console.log(err1);
+          return res.status(299).json({message: "Database error", errMsg: err1.message});
+        } else {
+          if(result1.length == 0) {
+            db.query("SELECT id FROM questions", 
+            (err2, result2) => {
+              if(err2) {
+                console.log(err2);
+                return res.status(299).json({message: "Database error", errMsg: err2.message});
+              } else {
+                  let customerAnswers = {};
+                  console.log(result2);
+                  for(var i = 0; i < result2.length; i++) {
+                    customerAnswers[result2[i].id] = 'empty';
+                  }
+                  return res.status(200).json({surveyAnswers: customerAnswers});
+              }
+            });
+          } else {
+            return res.status(200).json({surveyAnswers: JSON.parse(result1[0].surveyAnswers)});
+          }
+        }
+      })
+    }
+  });
 });
 
 // Server Start
