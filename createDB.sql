@@ -36,8 +36,8 @@ DELIMITER ;
 CREATE TABLE `tempdb`.`questions` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `sectionName` VARCHAR(200) NOT NULL,
-  `questionDescription` JSON NOT NULL,
-  `choiceDetails` JSON NOT NULL,
+  `questionDescription` TEXT NOT NULL,
+  `choiceDetails` TEXT NOT NULL,
   `createdOn` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
   `createdBy` VARCHAR(100) NOT NULL,
   `updatedOn` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
@@ -48,7 +48,7 @@ CREATE TABLE `tempdb`.`questions` (
 CREATE TABLE `tempdb`.`survey_answer` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `customerId` VARCHAR(100) NOT NULL,
-  `surveyAnswers` JSON NOT NULL,
+  `surveyAnswers` TEXT NOT NULL,
   `surveyStartDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
   `surveyEndDate` DATETIME NULL,
   `surveyCompleteFlag` INT NOT NULL DEFAULT 0,

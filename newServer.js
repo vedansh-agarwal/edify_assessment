@@ -435,6 +435,10 @@ app.post("/quizapi/customer/get-questions-by-section", (req, res) => {
           .status(299)
           .json({ message: "Database Error", errMsg: err.message });
       } else {
+        for(var i = 0; i < result.length; i++) {
+          result[i].questionDescription = JSON.parse(result[i].questionDescription);
+          result[i].choiceDetails = JSON.parse(result[i].choiceDetails);
+        }
         return res.status(200).json({ questions: result });
       }
     }
