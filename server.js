@@ -299,7 +299,7 @@ app.get("/edify/user/get-question/:ques_id", (req, res) => {
                     sectionName: result[0].sectionName,
                     subSectionName: result[0].subSectionName,
                     quesNo: quesDesc.quesNo,
-                    questionDescription: quesDesc.questionDescription,
+                    questionDescription: quesDesc.quesDescription,
                     choiceDetails: JSON.parse(result[0].choiceDetails),
                     questionHelp: result[0].questionHelp
                 }
@@ -377,7 +377,7 @@ app.post("/edify/user/get-questions-by-section-name", (req, res) => {
                         sectionName: sectionName,
                         subSectionName: ques.subSectionName,
                         quesNo: quesDesc.quesNo,
-                        questionDescription: quesDesc.questionDescription,
+                        questionDescription: quesDesc.quesDescription,
                         choiceDetails: JSON.parse(ques.choiceDetails),
                         questionHelp: ques.questionHelp
                     });
@@ -412,7 +412,7 @@ app.post("/edify/user/get-questions-by-section-and-subsection", (req, res) => {
                         sectionName: sectionName,
                         subSectionName: subSectionName,
                         quesNo: quesDesc.quesNo,
-                        questionDescription: quesDesc.questionDescription,
+                        questionDescription: quesDesc.quesDescription,
                         choiceDetails: JSON.parse(ques.choiceDetails),
                         questionHelp: ques.questionHelp
                     });
@@ -441,7 +441,7 @@ app.get("/edify/customer/all-questions", (req, res) => {
                         sectionName: ques.sectionName,
                         subSectionName: ques.subSectionName,
                         quesNo: quesDesc.quesNo,
-                        questionDescription: quesDesc.questionDescription,
+                        questionDescription: quesDesc.quesDescription,
                         choiceDetails: JSON.parse(ques.choiceDetails),
                         questionHelp: ques.questionHelp
                     });
@@ -470,7 +470,7 @@ app.get("/edify/customer/get-odm-questions", (req, res) => {
                         sectionName: ques.sectionName,
                         subSectionName: ques.subSectionName,
                         quesNo: quesDesc.quesNo,
-                        questionDescription: quesDesc.questionDescription,
+                        questionDescription: quesDesc.quesDescription,
                         choiceDetails: JSON.parse(ques.choiceDetails),
                         questionHelp: ques.questionHelp
                     });
@@ -499,7 +499,7 @@ app.get("/edify/customer/get-fm-questions", (req, res) => {
                         sectionName: ques.sectionName,
                         subSectionName: ques.subSectionName,
                         quesNo: quesDesc.quesNo,
-                        questionDescription: quesDesc.questionDescription,
+                        questionDescription: quesDesc.quesDescription,
                         choiceDetails: JSON.parse(ques.choiceDetails),
                         questionHelp: ques.questionHelp
                     });
