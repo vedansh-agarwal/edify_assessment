@@ -1,0 +1,11 @@
+{
+    "statusCodes": {
+        "databaseError": 299,
+        "alreadyExists": 231,
+        "success": 200,
+        "resourceCreated": 201,
+        "errorInSendingEmail": 221,
+        "invalidCredentials": 222,
+        "accessDenied": 251
+    }
+}
