@@ -6,6 +6,8 @@
         "resourceCreated": 201,
         "errorInSendingEmail": 221,
         "invalidCredentials": 222,
-        "accessDenied": 251
+        "accessDenied": 251,
+        "noSuchResource": 244,
+        "insufficientData": 224
     }
 }

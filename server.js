@@ -111,6 +111,10 @@ app.get("/edify/customer/generate-access-token", checkRefresh, (req, res) => {
 app.post("/edify/customer/enter-email", (req, res) => {
     const {email} = req.body;
 
+    if(!email) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
+
     let otp = Math.floor(100000 + Math.random() * 900000);
     db.query("CALL insert_otp(?, ?)", [email, otp],
     async (err, result) => {
@@ -119,7 +123,7 @@ app.post("/edify/customer/enter-email", (req, res) => {
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
             if(!result || !result[0] || !result[0][0]) {
-                return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: "No enteries recieved from database."});
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No enteries recieved from database."});
             }
             var subject, text;
             var status, responseMessage;
@@ -155,6 +159,11 @@ app.post("/edify/customer/enter-email", (req, res) => {
 
 app.post("/edify/customer/verify-otp", (req, res) => {
     const {email, otp} = req.body;
+
+    if(!email || !otp) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
+
     let customer_id = uuidv4();
     const refreshToken = jwt.sign({email: email}, process.env.JWT_REFRESH_SECRET, {expiresIn: process.env.REFRESH_TOKEN_LIFE});
     db.query("CALL check_otp(?, ?, ?, ?)", [email, otp, customer_id, refreshToken],
@@ -185,7 +194,7 @@ app.get("/edify/customer/get-details", checkAuth, (req, res) => {
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
             if(result.length == 0) {
-                return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: "No such user found"});
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such user found"});
             } else {
                 return res.status(statusCodes.success).json({message: "User Details", data: result[0]});
             }
@@ -199,6 +208,10 @@ app.post("/edify/customer/enter-details", checkAuth, (req, res) => {
     country = country || null;
     companyUrl = companyUrl || null;
 
+    if(!customerName || !companyName || !mobileNo) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
+
     db.query("CALL enter_customer_details(?, ?, ?, ?, ?, ?, ?)",
     [customerName, mobileNo, companyName, designation, email, country, companyUrl],
     (err, result) => {
@@ -207,7 +220,7 @@ app.post("/edify/customer/enter-details", checkAuth, (req, res) => {
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
             if(!result || !result[0] || !result[0][0]) {
-                return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: "No enteries recieved from database."});
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No enteries recieved from database."});
             } else {
                 if(result[0][0].completionStatus === -1) {
                     return res.status(statusCodes.alreadyExists).json({message: "User Already Exists"});
@@ -247,20 +260,86 @@ app.post("/edify/user/add-question", (req, res) => {
     questionHelp = questionHelp || null;
     subSectionName = subSectionName || null;
 
-    db.query("INSERT INTO questions (sectionName, subSectionName, questionDescription, choiceDetails, createdBy, updatedBy, questionHelp) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [sectionName, subSectionName, questionDescription, choiceDetails, createdBy, createdBy, questionHelp],
-    (err) => {
+    if(!sectionName || !questionDescription || !choiceDetails || !createdBy) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
+
+    db.query("CALL add_question(?, ?, ?, ?, ?, ?)",
+    [sectionName, subSectionName, questionDescription, choiceDetails, createdBy, questionHelp],
+    (err, result) => {
         if(err) {
             console.log(err);
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
-            return res.status(statusCodes.success).json({message: "Question Added"});
+            return res.status(statusCodes.success).json({message: "Question Added", questionID: result[0][0].id});
+        }
+    });
+});
+
+app.get("/edify/user/get-question/:ques_id", (req, res) => {
+    const {ques_id} = req.params;
+
+    db.query("SELECT sectionName, subSectionName, questionDescription, choiceDetails, questionHelp FROM questions WHERE id = ?", [ques_id],
+    (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            if(result.length == 0) {
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such question found"});
+            } else {
+                var quesDesc = JSON.parse(result[0].questionDescription);
+                var questionData = {
+                    sectionName: result[0].sectionName,
+                    subSectionName: result[0].subSectionName,
+                    quesNo: quesDesc.quesNo,
+                    questionDescription: quesDesc.questionDescription,
+                    choiceDetails: JSON.parse(result[0].choiceDetails),
+                    questionHelp: result[0].questionHelp
+                }
+                return res.status(statusCodes.success).json({message: "Question Details", questionData});
+            }
         }
     });
 });
 
 app.patch("/edify/user/update-question/:ques_id", (req, res) => {
-    // yet to finish
+    const {ques_id} = req.params;
+
+    var {sectionName, subSectionName, quesNo, questionDescription, choiceDetails, updatedBy, questionHelp} = req.body;
+    questionDescription = JSON.stringify({quesNo: quesNo, questionDescription: questionDescription});
+    choiceDetails = JSON.stringify(choiceDetails);
+    questionHelp = questionHelp || null;
+    subSectionName = subSectionName || null;
+
+    if(!sectionName || !questionDescription || !choiceDetails || !updatedBy) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
+
+    db.query("UPDATE questions SET sectionName = ?, subSectionName = ?, questionDescription = ?, choiceDetails = ?, updatedBy = ?, questionHelp = ? WHERE id = ?",
+    [sectionName, subSectionName, questionDescription, choiceDetails, updatedBy, questionHelp, ques_id],
+    (err) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            return res.status(statusCodes.success).json({message: "Question Updated"});
+        }
+    });
+});
+
+app.delete("/edify/user/delete-question/:ques_id", (req, res) => {
+    const {ques_id} = req.params;
+
+    db.query("DELETE FROM questions WHERE id = ?", [ques_id],
+    (err) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            return res.status(statusCodes.success).json({message: "Question Deleted"});
+        }
+    });
 });
 
 // Server Start

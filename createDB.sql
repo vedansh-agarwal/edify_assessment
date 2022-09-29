@@ -140,6 +140,37 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE `add_question` (
+	IN `sectionName_input` VARCHAR(200),
+	IN `subSectionName_input` VARCHAR(200),
+	IN `questionDescription_input` TEXT,
+	IN `choiceDetails_input` TEXT,
+	IN `createdBy_input` VARCHAR(100),
+	IN `questionHelp_input` VARCHAR(500))
+BEGIN
+	INSERT INTO `questions` (
+    `sectionName`, 
+    `subSectionName`, 
+    `questionDescription`, 
+    `choiceDetails`, 
+    `createdBy`, 
+    `updatedBy`, 
+    `questionHelp`)
+    VALUE (
+    `sectionName_input`, 
+    `subSectionName_input`, 
+    `questionDescription_input`, 
+    `choiceDetails_input`, 
+    `createdBy_input`, 
+    `createdBy_input`, 
+    `questionHelp_input`);
+    SELECT `id` FROM `questions` 
+    WHERE `questionDescription` = `questionDescription_input` 
+    AND `choiceDetails` = `choiceDetails_input`;
+END$$
+DELIMITER ;
+
 CREATE VIEW `get_customer_details` AS
 SELECT 
 `tempdb`.`customers`.`customerName` AS `customerName`,
