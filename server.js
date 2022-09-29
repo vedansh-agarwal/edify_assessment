@@ -510,22 +510,50 @@ app.get("/edify/customer/get-fm-questions", (req, res) => {
     })
 });
 
-app.post("/edify/customer/submit-survey-answers", (req, res) => {
-    // var {customer_id, surveyAnswers, isComplete, currentQuesNumber} = req.body;
+app.post("/edify/customer/submit-survey-answers", checkAuth, (req, res) => {
+    var {customer_id, surveyAnswers, isComplete, currentQuesNumber} = req.body;
 
-    // if(!surveyAnswers || !isComplete || !currentQuesNumber) {
-    //     return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
-    // }
+    if(!surveyAnswers || !isComplete || !currentQuesNumber) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
 
-    // try {
-    //     surveyAnswers = JSON.parse(surveyAnswers);
-    // } catch(err) {
-    //     return res.status(statusCodes.invalidFormat).json({message: "Invalid JSON format"});
-    // }
+    try {
+        surveyAnswers = JSON.parse(surveyAnswers);
+    } catch(err) {
+        return res.status(statusCodes.invalidFormat).json({message: "Invalid JSON format"});
+    }
 
-    // db.query("CALL add_survey_answers()");
+    db.query("CALL add_survey_answers(?, ?, ?, ?)", [customer_id, surveyAnswers, currentQuesNumber, (isComplete? 1:0)],
+    (err) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            return res.status(statusCodes.success).json({message: "Survey Answers Added"});
+        }
+    });
+});
 
+app.get("/edify/customer/get-current-answers", checkAuth, (req, res) => {
+    const {customer_id} = req.body;
 
+    db.query("CALL get_stored_answers(?)", [customer_id],
+    (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            var answers = {};
+            if(result[0].length == 0) {
+                result[1].forEach((answer) => {
+                    answers[answer.id] = "empty";
+                });
+            } else {
+                answers = result[0][0];
+            }
+            res.status(statusCodes.success).json({message: "Survey Answers", surveyAnswers: answers});
+        }
+    });
 });
 
 // Server Start

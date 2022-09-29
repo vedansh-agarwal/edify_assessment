@@ -172,6 +172,43 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE `add_survey_answer` (
+	IN `customerId_input` VARCHAR(100),
+	IN `surveyAnswers_input` TEXT,
+	IN `currentQuestion_input` INT,
+	IN `surveyCompleteFlag_input` INT)
+BEGIN
+	SET @var1 = (SELECT COUNT(*) FROM `survey_answers` WHERE `customerId` = `customerId_input`);
+    SET @var2 = NULL;
+	SET @var3 = NULL;
+    IF(`surveyCompleteFlag_input` = 0) THEN
+		SET @var2 = CURRENT_TIMESTAMP();
+		SET @var3 = (SELECT `refreshToken` FROM `customers` WHERE `customerId` = `customerId_input`);
+    END IF;
+    IF(@var1 = 0) THEN
+		UPDATE `survey_answers` 
+        SET `surveyAnswers` = `surveyAnswers_input`,
+			`currentQuestion` = `currentQuestion_input`,
+            `surveyEndDate` = @var2,
+            `surveyCompleteFlag` = `surveyCompleteFlag_input`
+		WHERE `customerId` = `customerId_input`;
+    ELSE
+		INSERT INTO `survey_answers` (`customerId`, `surveyAnswers`, `currentQuestion`, `surveyEndDate`, `surveyCompleteFlag`)
+        VALUE (`customerId_input`, `surveyAnswers_input`, `currentQuestion_input`, @var2, `surveyCompleteFlag_input`);
+    END IF;
+    UPDATE `customers` SET `refreshToken` = @var3 WHERE `customerId` = `customerId_input`;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE `get_stored_answers` (IN `customerId_input` VARCHAR(200))
+BEGIN
+	SELECT * FROM `survey_answers` WHERE `customerId` = `customerId_input`;
+    SELECT `id` FROM `questions`;
+END$$
+DELIMITER ;
+
 CREATE VIEW `get_customer_details` AS
 SELECT 
 `tempdb`.`customers`.`customerName` AS `customerName`,
