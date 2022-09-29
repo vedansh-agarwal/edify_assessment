@@ -255,14 +255,20 @@ app.patch("/edify/customer/update-details", checkAuth, (req, res) => {
 
 app.post("/edify/user/add-question", (req, res) => {
     var {sectionName, subSectionName, quesNo, questionDescription, choiceDetails, createdBy, questionHelp} = req.body;
-    questionDescription = JSON.stringify({quesNo: quesNo, questionDescription: questionDescription});
-    choiceDetails = JSON.stringify(choiceDetails);
-    questionHelp = questionHelp || null;
-    subSectionName = subSectionName || null;
 
-    if(!sectionName || !questionDescription || !choiceDetails || !createdBy) {
+    if(!sectionName || !quesNo || !questionDescription || !choiceDetails || !createdBy) {
         return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
     }
+
+    try {
+        questionDescription = JSON.stringify({quesNo: quesNo, questionDescription: questionDescription});
+        choiceDetails = JSON.stringify(choiceDetails);
+    } catch(err) {
+        console.log(err);
+        return res.status(statusCodes.invalidFormat).json({message: "Invalid JSON format"});
+    }
+    questionHelp = questionHelp || null;
+    subSectionName = subSectionName || null;
 
     db.query("CALL add_question(?, ?, ?, ?, ?, ?)",
     [sectionName, subSectionName, questionDescription, choiceDetails, createdBy, questionHelp],
@@ -305,8 +311,12 @@ app.get("/edify/user/get-question/:ques_id", (req, res) => {
 
 app.patch("/edify/user/update-question/:ques_id", (req, res) => {
     const {ques_id} = req.params;
-
     var {sectionName, subSectionName, quesNo, questionDescription, choiceDetails, updatedBy, questionHelp} = req.body;
+
+    if(!sectionName || !quesNo || !questionDescription || !choiceDetails || !updatedBy) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
+
     try {
         questionDescription = JSON.stringify({quesNo: quesNo, questionDescription: questionDescription});
         choiceDetails = JSON.stringify(choiceDetails);
@@ -316,10 +326,6 @@ app.patch("/edify/user/update-question/:ques_id", (req, res) => {
     }
     questionHelp = questionHelp || null;
     subSectionName = subSectionName || null;
-
-    if(!sectionName || !questionDescription || !choiceDetails || !updatedBy) {
-        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
-    }
 
     db.query("UPDATE questions SET sectionName = ?, subSectionName = ?, questionDescription = ?, choiceDetails = ?, updatedBy = ?, questionHelp = ? WHERE id = ?",
     [sectionName, subSectionName, questionDescription, choiceDetails, updatedBy, questionHelp, ques_id],
@@ -357,7 +363,7 @@ app.get("/edify/user/get-questions-by-section-name/:sectionName", (req, res) => 
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
             if(result.length == 0) {
-                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such questions found"});
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No questions found"});
             } else {
                 var questionData = [];
                 result.forEach((ques) => {
@@ -387,7 +393,7 @@ app.get("/edify/user/get-questions-by-section-and-subsection/:sectionName/:subSe
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
             if(result.length == 0) {
-                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such questions found"});
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No questions found"});
             } else {
                 var questionData = [];
                 result.forEach((ques) => {
@@ -407,6 +413,35 @@ app.get("/edify/user/get-questions-by-section-and-subsection/:sectionName/:subSe
     });
 });
 
+app.get("/edify/customer/all-questions", (req, res) => {
+    db.query("SELECT id, sectionName, subSectionName, questionDescription, choiceDetails, questionHelp FROM questions",
+    (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            if(result.length == 0) {
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No questions found"});
+            } else {
+                var questionData = [];
+                result.forEach((ques) => {
+                    var quesDesc = JSON.parse(ques.questionDescription);
+                    questionData.push({
+                        quesID: ques.id,
+                        sectionName: ques.sectionName,
+                        subSectionName: ques.subSectionName,
+                        quesNo: quesDesc.quesNo,
+                        questionDescription: quesDesc.questionDescription,
+                        choiceDetails: JSON.parse(ques.choiceDetails),
+                        questionHelp: ques.questionHelp
+                    });
+                });
+                return res.status(statusCodes.success).json({message: "Question Details", questionData});
+            }
+        }
+    });
+});
+
 app.post("/edify/customer/submit-survey-answers", (req, res) => {
     const {customer_id, surveyAnswers, isComplete, currentSection, currentQuesNumber} = req.body;
 
@@ -414,7 +449,7 @@ app.post("/edify/customer/submit-survey-answers", (req, res) => {
         return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
     }
 
-    
+
 });
 
 // Server Start
