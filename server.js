@@ -356,8 +356,12 @@ app.delete("/edify/user/delete-question/:ques_id", (req, res) => {
     });
 });
 
-app.get("/edify/user/get-questions-by-section-name/:sectionName", (req, res) => {
-    const {sectionName} = req.params;
+app.post("/edify/user/get-questions-by-section-name", (req, res) => {
+    const {sectionName} = req.body;
+
+    if(!sectionName) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
 
     db.query("SELECT id, subSectionName, questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName = ?", [sectionName],
     (err, result) => {
@@ -387,8 +391,12 @@ app.get("/edify/user/get-questions-by-section-name/:sectionName", (req, res) => 
     });
 });
 
-app.get("/edify/user/get-questions-by-section-and-subsection/:sectionName/:subSectionName", (req, res) => {
-    const {sectionName, subSectionName} = req.params;
+app.post("/edify/user/get-questions-by-section-and-subsection", (req, res) => {
+    const {sectionName, subSectionName} = req.body;
+
+    if(!sectionName || !subSectionName) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
 
     db.query("SELECT id, questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName = ? AND subSectionName = ?", [sectionName, subSectionName],
     (err, result) => {
