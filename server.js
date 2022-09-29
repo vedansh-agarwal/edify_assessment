@@ -196,7 +196,10 @@ app.get("/edify/customer/get-details", checkAuth, (req, res) => {
             if(result.length == 0) {
                 return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such user found"});
             } else {
-                return res.status(statusCodes.success).json({message: "User Details", data: result[0]});
+                result[0].companyUrl = (result[0].companyUrl === null)? "": result[0].companyUrl;
+                result[0].designation = (result[0].companyUrl === null)? "": result[0].designation;
+                result[0].country = (result[0].companyUrl === null)? "": result[0].country;
+                return res.status(statusCodes.success).json({message: "User Details", userDetails: result[0]});
             }
         }
     });
@@ -356,7 +359,7 @@ app.delete("/edify/user/delete-question/:ques_id", (req, res) => {
 app.get("/edify/user/get-questions-by-section-name/:sectionName", (req, res) => {
     const {sectionName} = req.params;
 
-    db.query("SELECT subSectionName, questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName = ?", [sectionName],
+    db.query("SELECT id, subSectionName, questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName = ?", [sectionName],
     (err, result) => {
         if(err) {
             console.log(err);
@@ -369,6 +372,7 @@ app.get("/edify/user/get-questions-by-section-name/:sectionName", (req, res) => 
                 result.forEach((ques) => {
                     var quesDesc = JSON.parse(ques.questionDescription);
                     questionData.push({
+                        quesID: ques.id,
                         sectionName: sectionName,
                         subSectionName: ques.subSectionName,
                         quesNo: quesDesc.quesNo,
@@ -386,7 +390,7 @@ app.get("/edify/user/get-questions-by-section-name/:sectionName", (req, res) => 
 app.get("/edify/user/get-questions-by-section-and-subsection/:sectionName/:subSectionName", (req, res) => {
     const {sectionName, subSectionName} = req.params;
 
-    db.query("SELECT questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName = ? AND subSectionName = ?", [sectionName, subSectionName],
+    db.query("SELECT id, questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName = ? AND subSectionName = ?", [sectionName, subSectionName],
     (err, result) => {
         if(err) {
             console.log(err);
@@ -399,6 +403,7 @@ app.get("/edify/user/get-questions-by-section-and-subsection/:sectionName/:subSe
                 result.forEach((ques) => {
                     var quesDesc = JSON.parse(ques.questionDescription);
                     questionData.push({
+                        quesID: ques.id,
                         sectionName: sectionName,
                         subSectionName: subSectionName,
                         quesNo: quesDesc.quesNo,
@@ -443,11 +448,19 @@ app.get("/edify/customer/all-questions", (req, res) => {
 });
 
 app.post("/edify/customer/submit-survey-answers", (req, res) => {
-    const {customer_id, surveyAnswers, isComplete, currentSection, currentQuesNumber} = req.body;
+    // var {customer_id, surveyAnswers, isComplete, currentQuesNumber} = req.body;
 
-    if(!surveyAnswers || !isComplete || !currentSection || !currentQuesNumber) {
-        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
-    }
+    // if(!surveyAnswers || !isComplete || !currentQuesNumber) {
+    //     return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    // }
+
+    // try {
+    //     surveyAnswers = JSON.parse(surveyAnswers);
+    // } catch(err) {
+    //     return res.status(statusCodes.invalidFormat).json({message: "Invalid JSON format"});
+    // }
+
+    // db.query("CALL add_survey_answers()");
 
 
 });
