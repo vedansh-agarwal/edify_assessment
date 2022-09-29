@@ -196,9 +196,6 @@ app.get("/edify/customer/get-details", checkAuth, (req, res) => {
             if(result.length == 0) {
                 return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such user found"});
             } else {
-                result[0].companyUrl = (result[0].companyUrl === null)? "": result[0].companyUrl;
-                result[0].designation = (result[0].companyUrl === null)? "": result[0].designation;
-                result[0].country = (result[0].companyUrl === null)? "": result[0].country;
                 return res.status(statusCodes.success).json({message: "User Details", userDetails: result[0]});
             }
         }
@@ -453,6 +450,64 @@ app.get("/edify/customer/all-questions", (req, res) => {
             }
         }
     });
+});
+
+app.get("/edify/customer/get-odm-questions", (req, res) => {
+    db.query("SELECT id, sectionName, subSectionName, questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName LIKE 'Section 3%'",
+    (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            if(result.length == 0) {
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No questions found"});
+            } else {
+                var questionData = [];
+                result.forEach((ques) => {
+                    var quesDesc = JSON.parse(ques.questionDescription);
+                    questionData.push({
+                        quesID: ques.id,
+                        sectionName: ques.sectionName,
+                        subSectionName: ques.subSectionName,
+                        quesNo: quesDesc.quesNo,
+                        questionDescription: quesDesc.questionDescription,
+                        choiceDetails: JSON.parse(ques.choiceDetails),
+                        questionHelp: ques.questionHelp
+                    });
+                });
+                return res.status(statusCodes.success).json({message: "Question Details", questionData});
+            }
+        }
+    })
+});
+
+app.get("/edify/customer/get-fm-questions", (req, res) => {
+    db.query("SELECT id, sectionName, subSectionName, questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName LIKE 'Section 4%'",
+    (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            if(result.length == 0) {
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No questions found"});
+            } else {
+                var questionData = [];
+                result.forEach((ques) => {
+                    var quesDesc = JSON.parse(ques.questionDescription);
+                    questionData.push({
+                        quesID: ques.id,
+                        sectionName: ques.sectionName,
+                        subSectionName: ques.subSectionName,
+                        quesNo: quesDesc.quesNo,
+                        questionDescription: quesDesc.questionDescription,
+                        choiceDetails: JSON.parse(ques.choiceDetails),
+                        questionHelp: ques.questionHelp
+                    });
+                });
+                return res.status(statusCodes.success).json({message: "Question Details", questionData});
+            }
+        }
+    })
 });
 
 app.post("/edify/customer/submit-survey-answers", (req, res) => {

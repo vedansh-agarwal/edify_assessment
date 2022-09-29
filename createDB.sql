@@ -40,7 +40,7 @@ CREATE TABLE `tempdb`.`questions` (
   
 CREATE TABLE `tempdb`.`survey_answers` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `customerId` VARCHAR(100) NOT NULL,
+  `customerId` VARCHAR(100) NOT NULL UNIQUE,
   `surveyAnswers` TEXT NOT NULL,
   `currentQuestion` INT NOT NULL DEFAULT 0,
   `surveyStartDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
@@ -69,8 +69,8 @@ BEGIN
     IF (NOT ISNULL(@var1)) THEN
 		SET @var2 = (SELECT `companyEmailId` FROM `customers`  WHERE `companyEmailId` = `email_input`);
         IF(ISNULL(@var2)) THEN
-			INSERT INTO `customers` (`customerId`, `customerName`, `mobileNo`, `companyName`, `companyEmailId`, `refreshToken`) 
-			VALUE (`customer_id_input`, "", UUID(), "", `email_input`, `refresh_token_input`);
+			INSERT INTO `customers` (`customerId`, `customerName`, `mobileNo`, `companyName`, `companyEmailId`, `refreshToken`, `designation`, `country`, `companyUrl`) 
+			VALUE (`customer_id_input`, "", UUID(), "", `email_input`, `refresh_token_input`, "", "", "");
 		ELSE
 			UPDATE `customers` SET `refreshToken` = `refresh_token_input` WHERE `companyEmailId` = `email_input`;
 			SET @user_id = (SELECT `customerId` FROM `customers` WHERE `companyEmailId` = `email_input`);
