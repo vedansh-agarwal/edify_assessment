@@ -307,8 +307,13 @@ app.patch("/edify/user/update-question/:ques_id", (req, res) => {
     const {ques_id} = req.params;
 
     var {sectionName, subSectionName, quesNo, questionDescription, choiceDetails, updatedBy, questionHelp} = req.body;
-    questionDescription = JSON.stringify({quesNo: quesNo, questionDescription: questionDescription});
-    choiceDetails = JSON.stringify(choiceDetails);
+    try {
+        questionDescription = JSON.stringify({quesNo: quesNo, questionDescription: questionDescription});
+        choiceDetails = JSON.stringify(choiceDetails);
+    } catch(err) {
+        console.log(err);
+        return res.status(statusCodes.invalidFormat).json({message: "Invalid JSON format"});
+    }
     questionHelp = questionHelp || null;
     subSectionName = subSectionName || null;
 
@@ -340,6 +345,76 @@ app.delete("/edify/user/delete-question/:ques_id", (req, res) => {
             return res.status(statusCodes.success).json({message: "Question Deleted"});
         }
     });
+});
+
+app.get("/edify/user/get-questions-by-section-name/:sectionName", (req, res) => {
+    const {sectionName} = req.params;
+
+    db.query("SELECT subSectionName, questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName = ?", [sectionName],
+    (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            if(result.length == 0) {
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such questions found"});
+            } else {
+                var questionData = [];
+                result.forEach((ques) => {
+                    var quesDesc = JSON.parse(ques.questionDescription);
+                    questionData.push({
+                        sectionName: sectionName,
+                        subSectionName: ques.subSectionName,
+                        quesNo: quesDesc.quesNo,
+                        questionDescription: quesDesc.questionDescription,
+                        choiceDetails: JSON.parse(ques.choiceDetails),
+                        questionHelp: ques.questionHelp
+                    });
+                });
+                return res.status(statusCodes.success).json({message: "Question Details", questionData});
+            }
+        }
+    });
+});
+
+app.get("/edify/user/get-questions-by-section-and-subsection/:sectionName/:subSectionName", (req, res) => {
+    const {sectionName, subSectionName} = req.params;
+
+    db.query("SELECT questionDescription, choiceDetails, questionHelp FROM questions WHERE sectionName = ? AND subSectionName = ?", [sectionName, subSectionName],
+    (err, result) => {
+        if(err) {
+            console.log(err);
+            return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
+        } else {
+            if(result.length == 0) {
+                return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such questions found"});
+            } else {
+                var questionData = [];
+                result.forEach((ques) => {
+                    var quesDesc = JSON.parse(ques.questionDescription);
+                    questionData.push({
+                        sectionName: sectionName,
+                        subSectionName: subSectionName,
+                        quesNo: quesDesc.quesNo,
+                        questionDescription: quesDesc.questionDescription,
+                        choiceDetails: JSON.parse(ques.choiceDetails),
+                        questionHelp: ques.questionHelp
+                    });
+                });
+                return res.status(statusCodes.success).json({message: "Question Details", questionData});
+            }
+        }
+    });
+});
+
+app.post("/edify/customer/submit-survey-answers", (req, res) => {
+    const {customer_id, surveyAnswers, isComplete, currentSection, currentQuesNumber} = req.body;
+
+    if(!surveyAnswers || !isComplete || !currentSection || !currentQuesNumber) {
+        return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
+    }
+
+    
 });
 
 // Server Start

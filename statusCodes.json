@@ -8,6 +8,7 @@
         "invalidCredentials": 222,
         "accessDenied": 251,
         "noSuchResource": 244,
-        "insufficientData": 224
+        "insufficientData": 224,
+        "invalidFormat": 253
     }
 }
