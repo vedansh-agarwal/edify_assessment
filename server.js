@@ -101,8 +101,10 @@ function generateResult(surveyAnswers, odmQuestions, fmQuestions) {
             choiceObj[choice[j].key] = choice[j].rank;
         }
         var selectedChoice = surveyAnswers[odmQuestions[i].id];
-        var additive = choiceObj[selectedChoice] || "0";
-        odmScore += parseInt(additive);
+        if(selectedChoice) {
+            var additive = choiceObj[selectedChoice] || "0";
+            odmScore += parseInt(additive);
+        }
     }
 
     for(var i = 0; i < fmQuestions.length; i++) {
@@ -112,8 +114,10 @@ function generateResult(surveyAnswers, odmQuestions, fmQuestions) {
             choiceObj[choice[j].key] = choice[j].rank;
         }
         var selectedChoice = surveyAnswers[fmQuestions[i].id];
-        var additive = choiceObj[selectedChoice] || "0";
-        fmScore += parseInt(additive);
+        if(selectedChoice) {
+            var additive = choiceObj[selectedChoice] || "0";
+            fmScore += parseInt(additive);
+        }
     }
     return {odmScore: odmScore, fmScore: fmScore};
 }
