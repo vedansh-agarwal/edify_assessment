@@ -2,6 +2,21 @@ DROP DATABASE IF EXISTS `tempdb`;
 CREATE DATABASE `tempdb`;
 USE `tempdb`;
 
+CREATE TABLE `tempdb`.`users` (
+    `userId` VARCHAR(100) NOT NULL,
+    `completeName` VARCHAR(200) NOT NULL,
+    `mobileNo` VARCHAR(20) NOT NULL UNIQUE,
+    `emailId` VARCHAR(200) NOT NULL UNIQUE,
+	`password` VARCHAR(200) NOT NULL,
+    `accessToken` VARCHAR(300) NOT NULL,
+    `refreshToken` VARCHAR(300) NOT NULL,
+	`createdOn` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+    `createdBy` VARCHAR(100) NOT NULL,
+    `updatedOn` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+    `updatedBy` VARCHAR(100) NOT NULL,
+    `activeFlag` INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`userId`));
+
 CREATE TABLE `tempdb`.`customers` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `customerId` VARCHAR(200) NOT NULL,
