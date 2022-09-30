@@ -43,6 +43,7 @@ CREATE TABLE `tempdb`.`survey_answers` (
   `customerId` VARCHAR(100) NOT NULL UNIQUE,
   `surveyAnswers` TEXT NOT NULL,
   `currentQuestion` INT NOT NULL DEFAULT 0,
+  `currentSection` VARCHAR (200) NOT NULL, 
   `surveyStartDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
   `surveyEndDate` DATETIME NULL,
   `surveyCompleteFlag` INT NOT NULL DEFAULT 0,
@@ -177,6 +178,7 @@ CREATE PROCEDURE `add_survey_answer` (
 	IN `customerId_input` VARCHAR(100),
 	IN `surveyAnswers_input` TEXT,
 	IN `currentQuestion_input` INT,
+    IN `currentSection_input` VARCHAR(200),
 	IN `surveyCompleteFlag_input` INT)
 BEGIN
 	SET @var1 = (SELECT COUNT(*) FROM `survey_answers` WHERE `customerId` = `customerId_input`);
@@ -196,8 +198,8 @@ BEGIN
             `surveyCompleteFlag` = `surveyCompleteFlag_input`
 		WHERE `customerId` = `customerId_input`;
     ELSE
-		INSERT INTO `survey_answers` (`customerId`, `surveyAnswers`, `currentQuestion`, `surveyEndDate`, `surveyCompleteFlag`)
-        VALUE (`customerId_input`, `surveyAnswers_input`, `currentQuestion_input`, @var2, `surveyCompleteFlag_input`);
+		INSERT INTO `survey_answers` (`customerId`, `surveyAnswers`, `currentQuestion`, `currentSection`, `surveyEndDate`, `surveyCompleteFlag`)
+        VALUE (`customerId_input`, `surveyAnswers_input`, `currentQuestion_input`, `currentSection_input`, @var2, `surveyCompleteFlag_input`);
     END IF;
     UPDATE `customers` SET `refreshToken` = @var3 WHERE `customerId` = `customerId_input`;
 END$$

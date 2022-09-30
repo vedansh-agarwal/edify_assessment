@@ -576,9 +576,9 @@ app.get("/edify/customer/get-fm-questions", (req, res) => {
 });
 
 app.post("/edify/customer/submit-survey-answers", checkAuth, (req, res) => {
-    var {customer_id, surveyAnswers, isComplete, currentQuesNumber} = req.body;
+    var {customer_id, surveyAnswers, isComplete, currentQuesNumber, currentSection} = req.body;
 
-    if(!surveyAnswers || !isComplete || !currentQuesNumber) {
+    if(!surveyAnswers || !isComplete || !currentQuesNumber || !currentSection) {
         return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
     }
 
@@ -589,7 +589,7 @@ app.post("/edify/customer/submit-survey-answers", checkAuth, (req, res) => {
         return res.status(statusCodes.invalidFormat).json({message: "Invalid JSON format"});
     }
 
-    db.query("CALL add_survey_answer(?, ?, ?, ?)", [customer_id, dbSurveyAnswers, currentQuesNumber, (isComplete? 1:0)],
+    db.query("CALL add_survey_answer(?, ?, ?, ?, ?)", [customer_id, dbSurveyAnswers, currentQuesNumber, currentSection, (isComplete? 1:0)],
     (err, result) => {
         if(err) {
             console.log(err);
@@ -610,15 +610,19 @@ app.get("/edify/customer/get-current-answers", checkAuth, (req, res) => {
             console.log(err);
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
-            var answers = {};
+            var surveyAnswers = {};
+            var currentQuestion = result[0].currentQuestion;
+            var currentSection = result[0].currentSection;
             if(result[0].length == 0) {
+                currentQuestion = currentQuestion || 1;
+                currentSection = currentSection || "basic details";
                 result[1].forEach((answer) => {
-                    answers[answer.id] = "empty";
+                    surveyAnswers[answer.id] = "empty";
                 });
             } else {
                 answers = result[0][0];
             }
-            res.status(statusCodes.success).json({message: "Survey Answers", surveyAnswers: answers});
+            return res.status(statusCodes.success).json({message: "Survey Answers", surveyAnswers, currentQuestion, currentSection});
         }
     });
 });
