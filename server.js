@@ -197,8 +197,12 @@ app.get("/edify/customer/get-details", checkAuth, (req, res) => {
             if(result.length == 0) {
                 return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such user found"});
             } else {
-                result[0].mobileNo = (/[a-zA-Z]/.test(result[0].mobileNo))? "": result[0].mobileNo;
-                return res.status(statusCodes.success).json({message: "User Details", userDetails: result[0]});
+                var statusCode = statusCodes.success;
+                if(/[a-zA-Z]/.test(result[0].mobileNo)) {
+                    result[0].mobileNo = "";
+                    statusCode = statusCodes.resourceCreated;
+                }
+                return res.status(statusCode).json({message: "User Details", userDetails: result[0]});
             }
         }
     });
