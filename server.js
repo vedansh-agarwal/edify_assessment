@@ -130,12 +130,12 @@ app.post("/edify/customer/enter-email", (req, res) => {
             if(result[0][0].noOfLinkedAccounts === 0) {
                 var mailParts = email.split("@");
                 var hashedEmail = mailParts[0].substring(0,2) + new Array(mailParts[0].length-3).join("*") + mailParts[0].substring(mailParts[0].length-2)+"@"+mailParts[1];
-                subject = "Survey Account Email verification security Code";
+                subject = "Survey Account Email Verification Security Code";
                 text = `Survey Code\n\nPlease use the following security code for verifying the company email address ${hashedEmail}.\n\n\n\n\nSecurity Code : ${otp}\n\nIf you didn't request this code, you can safely ignore this email. Someone else might have typed your email address by mistake.\n\nThanks,\nSurvey Team`;
                 status = statusCodes.resourceCreated;
                 responseMessage = "OTP for registration sent to your email";
             } else {
-                subject = "Survey Account Login security Code";
+                subject = "Survey Account Login Security Code";
                 text = `Survey Code\n\nPlease use the following security code for logging into the Survey Application.\n\n\n\n\nSecurity Code : ${otp}\n\nIf you didn't request this code, you can safely ignore this email. Someone else might have typed your email address by mistake.\n\nThanks,\nSurvey Team`;
                 status = statusCodes.success;
                 responseMessage = "OTP for login sent to your email";
@@ -173,10 +173,11 @@ app.post("/edify/customer/verify-otp", (req, res) => {
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
             if(result && result[0] && result[0].length > 0) {
+                const statusCode = (customer_id === result[0][0].customer_id) ? statusCodes.resourceCreated : statusCodes.success;
                 customer_id = result[0][0].customer_id;
                 const encryptedRefresh =  aes256.encrypt(process.env.REFRESH_ENCRYPTION_KEY, refreshToken); 
                 const accessToken = jwt.sign({refreshToken: encryptedRefresh, customer_id: customer_id, email: email}, process.env.JWT_ACCESS_SECRET, {expiresIn: process.env.ACCESS_TOKEN_LIFE});
-                return res.status(statusCodes.success).json({message: "OTP verified", accessToken: accessToken, refreshToken: refreshToken});
+                return res.status(statusCode).json({message: "OTP verified", accessToken: accessToken, refreshToken: refreshToken});
             } else {
                 return res.status(statusCodes.invalidCredentials).json({message: "Invalid OTP"});
             }
@@ -196,6 +197,7 @@ app.get("/edify/customer/get-details", checkAuth, (req, res) => {
             if(result.length == 0) {
                 return res.status(statusCodes.noSuchResource).json({message: "Database Error", errMsg: "No such user found"});
             } else {
+                result[0].mobileNo = (/[a-zA-Z]/.test(result[0].mobileNo))? "": result[0].mobileNo;
                 return res.status(statusCodes.success).json({message: "User Details", userDetails: result[0]});
             }
         }
@@ -214,7 +216,7 @@ app.post("/edify/customer/enter-details", checkAuth, (req, res) => {
 
     db.query("CALL enter_customer_details(?, ?, ?, ?, ?, ?, ?)",
     [customerName, mobileNo, companyName, designation, email, country, companyUrl],
-    (err, result) => {
+    async (err, result) => {
         if(err) {
             console.log(err);
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
@@ -225,7 +227,20 @@ app.post("/edify/customer/enter-details", checkAuth, (req, res) => {
                 if(result[0][0].completionStatus === -1) {
                     return res.status(statusCodes.alreadyExists).json({message: "User Already Exists"});
                 } else {
-                    return res.status(statusCodes.success).json({message: "Details Registered"});
+                    const link = process.env.ROUTE_FOR_ACTIVATION;
+                    try {
+                        await transporter.sendMail({
+                            from: "Survey Team <" + process.env.SENDER_GMAIL + ">",
+                            to: email,
+                            subject: "Survey Account Registration Verification Link",
+                            text: `Dear Mr. ${customerName}\n\nThank you for registering with us. You can now start the survey using following link.\n\n\n`+link+"\n\nThanks,\nSurvey Team"
+                        });
+                        return res.status(statusCodes.success).json({message: "Details Registered. Please check your email for the link to start the survey."});
+                    }
+                    catch(err) {
+                        console.log(err);
+                        return res.status(statusCodes.errorInSendingEmail).json({message: "Error in sending email."});
+                    }
                 }
             }
         }
@@ -243,7 +258,7 @@ app.patch("/edify/customer/update-details", checkAuth, (req, res) => {
 
     db.query("CALL update_customer_details(?, ?, ?, ?, ?, ?, ?)",
     [customerName, mobileNo, companyName, designation, email, country, companyUrl],
-    (err, result) => {
+    (err) => {
         if(err) {
             console.log(err);
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
