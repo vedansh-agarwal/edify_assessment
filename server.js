@@ -610,9 +610,12 @@ app.get("/edify/customer/get-current-answers", checkAuth, (req, res) => {
             console.log(err);
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
-            var surveyAnswers = {};
-            var currentQuestion = result[0].currentQuestion;
-            var currentSection = result[0].currentSection;
+            var surveyAnswers = {}, currentQuestion, currentSection;
+            if(result[0] && result[0][0]) {
+                var surveyAnswers = JSON.parse(result[0][0].surveyAnswers);
+                var currentQuestion = result[0][0].currentQuestion;
+                var currentSection = result[0][0].currentSection;
+            }
             if(result[0].length == 0) {
                 currentQuestion = currentQuestion || 1;
                 currentSection = currentSection || "basic details";

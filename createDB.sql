@@ -190,7 +190,7 @@ BEGIN
       SELECT `id`, `choiceDetails` FROM `questions` WHERE `sectionName` LIKE 'Section 3%';
       SELECT `id`, `choiceDetails` FROM `questions` WHERE `sectionName` LIKE 'Section 4%';
     END IF;
-    IF(@var1 = 0) THEN
+    IF(@var1 != 0) THEN
 		UPDATE `survey_answers` 
         SET `surveyAnswers` = `surveyAnswers_input`,
 			      `currentQuestion` = `currentQuestion_input`,
