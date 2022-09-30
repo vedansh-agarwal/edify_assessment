@@ -57,7 +57,6 @@ function checkAuth(req, res, next) {
             }
         });
     } catch(err) {
-        console.log(err);
         return res.status(statusCodes.accessDenied).json({message: "Access Denied"});
     }
 }
@@ -88,7 +87,6 @@ function checkRefresh(req, res, next) {
             }
         });
     } catch(err) {
-        console.log(err);
         return res.status(statusCodes.accessDenied).json({message: "Access Denied"});
     }
 }
