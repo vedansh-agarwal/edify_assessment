@@ -182,14 +182,16 @@ BEGIN
 	SET @var1 = (SELECT COUNT(*) FROM `survey_answers` WHERE `customerId` = `customerId_input`);
     SET @var2 = NULL;
 	SET @var3 = NULL;
-    IF(`surveyCompleteFlag_input` = 0) THEN
-		SET @var2 = CURRENT_TIMESTAMP();
-		SET @var3 = (SELECT `refreshToken` FROM `customers` WHERE `customerId` = `customerId_input`);
+    IF(`surveyCompleteFlag_input` = 1) THEN
+		  SET @var2 = CURRENT_TIMESTAMP();
+		  SET @var3 = (SELECT `refreshToken` FROM `customers` WHERE `customerId` = `customerId_input`);
+      SELECT `id`, `choiceDetails` FROM `questions` WHERE `sectionName` LIKE 'Section 3%';
+      SELECT `id`, `choiceDetails` FROM `questions` WHERE `sectionName` LIKE 'Section 4%';
     END IF;
     IF(@var1 = 0) THEN
 		UPDATE `survey_answers` 
         SET `surveyAnswers` = `surveyAnswers_input`,
-			`currentQuestion` = `currentQuestion_input`,
+			      `currentQuestion` = `currentQuestion_input`,
             `surveyEndDate` = @var2,
             `surveyCompleteFlag` = `surveyCompleteFlag_input`
 		WHERE `customerId` = `customerId_input`;

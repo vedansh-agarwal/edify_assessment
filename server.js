@@ -91,6 +91,32 @@ function checkRefresh(req, res, next) {
     }
 }
 
+// Utility Functions
+function generateResult(surveyAnswers, odmQuestions, fmQuestions) {
+    var odmScore = 0, fmScore = 0;
+    for(var i = 0; i < odmQuestions.length; i++) {
+        var choice = JSON.parse(odmQuestions[i].choiceDetails);
+        var choiceObj = {};
+        for(var j = 0; j < choice.length; j++) {
+            choiceObj[choice[j].key] = choice[j].rank;
+        }
+        var selectedChoice = surveyAnswers[odmQuestions[i].id];
+        var additive = choiceObj[selectedChoice] || "0";
+        odmScore += parseInt(additive);
+    }
+
+    for(var i = 0; i < fmQuestions.length; i++) {
+        var choice = JSON.parse(fmQuestions[i].choiceDetails);
+        var choiceObj = {};
+        for(var j = 0; j < choice.length; j++) {
+            choiceObj[choice[j].key] = choice[j].rank;
+        }
+        var selectedChoice = surveyAnswers[fmQuestions[i].id];
+        var additive = choiceObj[selectedChoice] || "0";
+        fmScore += parseInt(additive);
+    }
+    return {odmScore: odmScore, fmScore: fmScore};
+}
 
 // Imports for Routes
 const { v4: uuidv4 } = require("uuid");
@@ -165,13 +191,31 @@ app.post("/edify/customer/verify-otp", (req, res) => {
     let customer_id = uuidv4();
     const refreshToken = jwt.sign({email: email}, process.env.JWT_REFRESH_SECRET, {expiresIn: process.env.REFRESH_TOKEN_LIFE});
     db.query("CALL check_otp(?, ?, ?, ?)", [email, otp, customer_id, refreshToken],
-    (err, result) => {
+    async (err, result) => {
         if(err) {
             console.log(err);
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
             if(result && result[0] && result[0].length > 0) {
-                const statusCode = (customer_id === result[0][0].customer_id) ? statusCodes.resourceCreated : statusCodes.success;
+                var statusCode;
+                if(customer_id === result[0][0].customer_id) {
+                    statusCode =  statusCodes.resourceCreated;
+                } else {
+                    statusCode = statusCodes.success;
+                    const link = process.env.ROUTE_FOR_ACTIVATION;
+                    try {
+                        await transporter.sendMail({
+                            from: "Survey Team <" + process.env.SENDER_GMAIL + ">",
+                            to: email,
+                            subject: "Survey Assessment Link",
+                            text: `Dear Mr. ${customerName}\n\nYou can now resume the survey using following link.\n\n\n`+link+"\n\nThanks,\nSurvey Team"
+                        });
+                    }
+                    catch(err) {
+                        console.log(err);
+                        return res.status(statusCodes.errorInSendingEmail).json({message: "Error in sending email."});
+                    }
+                }
                 customer_id = result[0][0].customer_id;
                 const encryptedRefresh =  aes256.encrypt(process.env.REFRESH_ENCRYPTION_KEY, refreshToken); 
                 const accessToken = jwt.sign({refreshToken: encryptedRefresh, customer_id: customer_id, email: email}, process.env.JWT_ACCESS_SECRET, {expiresIn: process.env.ACCESS_TOKEN_LIFE});
@@ -234,7 +278,7 @@ app.post("/edify/customer/enter-details", checkAuth, (req, res) => {
                         await transporter.sendMail({
                             from: "Survey Team <" + process.env.SENDER_GMAIL + ">",
                             to: email,
-                            subject: "Survey Account Registration Verification Link",
+                            subject: "Survey Assessment Link",
                             text: `Dear Mr. ${customerName}\n\nThank you for registering with us. You can now start the survey using following link.\n\n\n`+link+"\n\nThanks,\nSurvey Team"
                         });
                         return res.status(statusCodes.success).json({message: "Details Registered. Please check your email for the link to start the survey."});
@@ -534,19 +578,21 @@ app.post("/edify/customer/submit-survey-answers", checkAuth, (req, res) => {
         return res.status(statusCodes.insufficientData).json({message: "Insufficient Data Provided"});
     }
 
+    var dbSurveyAnswers;
     try {
-        surveyAnswers = JSON.parse(surveyAnswers);
+        dbSurveyAnswers = JSON.stringify(surveyAnswers);
     } catch(err) {
         return res.status(statusCodes.invalidFormat).json({message: "Invalid JSON format"});
     }
 
-    db.query("CALL add_survey_answers(?, ?, ?, ?)", [customer_id, surveyAnswers, currentQuesNumber, (isComplete? 1:0)],
-    (err) => {
+    db.query("CALL add_survey_answer(?, ?, ?, ?)", [customer_id, dbSurveyAnswers, currentQuesNumber, (isComplete? 1:0)],
+    (err, result) => {
         if(err) {
             console.log(err);
             return res.status(statusCodes.databaseError).json({message: "Database Error", errMsg: err.message});
         } else {
-            return res.status(statusCodes.success).json({message: "Survey Answers Added"});
+            var surveyResults = isComplete? generateResult(surveyAnswers, result[0], result[1]): undefined;
+            return res.status(statusCodes.success).json({message: "Survey Answers Added", surveyResults});
         }
     });
 });
