@@ -212,7 +212,7 @@ app.post("/edify/customer/verify-otp", (req, res) => {
                             from: "Survey Team <" + process.env.SENDER_GMAIL + ">",
                             to: email,
                             subject: "Survey Assessment Link",
-                            text: `Dear Mr. ${customerName}\n\nYou can now resume the survey using following link.\n\n\n`+link+"\n\nThanks,\nSurvey Team"
+                            text: `Dear Mr. ${result[0][0].customerName}\n\nYou can now resume the survey using following link.\n\n\n`+link+"\n\nThanks,\nSurvey Team"
                         });
                     }
                     catch(err) {
