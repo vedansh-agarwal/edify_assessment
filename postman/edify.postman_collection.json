@@ -1,0 +1,490 @@
+{
+	"info": {
+		"_postman_id": "cf1a9ca6-794d-4231-8a6f-0232852d0473",
+		"name": "edify",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Generate Access Token",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/generate-access-token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"generate-access-token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Enter Email",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"Not Optional String\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/enter-email",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"enter-email"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify OTP",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"Not Optional String\",\n    \"otp\": \"Not Optional 6 digit number\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/verify-otp",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"verify-otp"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Details",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWZyZXNoVG9rZW4iOiJoN3p3bVpYaVo4elBOWUVvN2VYL1QrS2tacHBDNWZ4S2dOQUtGNGxhTkNGQ3h5N0tCckFJVmprdjF5c05ySEE3bU01emovSFh1dlV0Zlp4WllPMXEvRmJVdkZ0SzUvZFc4THJmOUhMWHUyY3RFTGYyY2dsTVUyZUV6dDlRZGtnTExFSXNkQWtldmVFMTlTZEJTTFNEemxER2p3TDVaR0xDQTZLcE9iVEp4RnpXNFNIenhLUG0wWXc4SFcxdUpjWlBReEN4cUczcjlLMVp5Wjd6dnJQenk0enB4M09nMkV3ZWVGUWcwNStxWFNXRXE4ektid1d5MC94OG9SUzV1VHB1IiwiY3VzdG9tZXJfaWQiOiI2OGVmYTY2Zi02MDFmLTQ3NjYtOGQ4Yi0xYmE5Zjk0MDdkNTMiLCJlbWFpbCI6ImhpdGhpc2lzdmVkYW5zaEBnbWFpbC5jb20iLCJpYXQiOjE2NjQ3OTIwMjgsImV4cCI6MTY2NDc5MjkyOH0.tl43qIcQUzvRP68LDkFEVeyR9tmDjJp8WxmOXz3nc4I",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/get-details",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"get-details"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Enter Details",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWZyZXNoVG9rZW4iOiJoN3p3bVpYaVo4elBOWUVvN2VYL1QrS2tacHBDNWZ4S2dOQUtGNGxhTkNGQ3h5N0tCckFJVmprdjF5c05ySEE3bU01emovSFh1dlV0Zlp4WllPMXEvRmJVdkZ0SzUvZFc4THJmOUhMWHUyY3RFTGYyY2dsTVUyZUV6dDlRZGtnTExFSXNkQWtldmVFMTlTZEJTTFNEemxER2p3TDVaR0xDQTZLcE9iVEp4RnpXNFNIenhLUG0wWXc4SFcxdUpjWlBReEN4cUczcjlLMVp5Wjd6dnJQenk0enB4M09nMkV3ZWVGUWcwNStxWFNXRXE4ektid1d5MC94OG9SUzV1VHB1IiwiY3VzdG9tZXJfaWQiOiI2OGVmYTY2Zi02MDFmLTQ3NjYtOGQ4Yi0xYmE5Zjk0MDdkNTMiLCJlbWFpbCI6ImhpdGhpc2lzdmVkYW5zaEBnbWFpbC5jb20iLCJpYXQiOjE2NjQ3OTIwMjgsImV4cCI6MTY2NDc5MjkyOH0.tl43qIcQUzvRP68LDkFEVeyR9tmDjJp8WxmOXz3nc4I",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customerName\": \"Not Optional String\",\n    \"companyName\": \"Not Optional String\",\n    \"mobileNo\": \"Not Optional String\",\n    \"designation\": \"Optional String\",\n    \"country\": \"Optional String\",\n    \"companyUrl\": \"Optional String\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/enter-details",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"enter-details"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Details",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWZyZXNoVG9rZW4iOiJoN3p3bVpYaVo4elBOWUVvN2VYL1QrS2tacHBDNWZ4S2dOQUtGNGxhTkNGQ3h5N0tCckFJVmprdjF5c05ySEE3bU01emovSFh1dlV0Zlp4WllPMXEvRmJVdkZ0SzUvZFc4THJmOUhMWHUyY3RFTGYyY2dsTVUyZUV6dDlRZGtnTExFSXNkQWtldmVFMTlTZEJTTFNEemxER2p3TDVaR0xDQTZLcE9iVEp4RnpXNFNIenhLUG0wWXc4SFcxdUpjWlBReEN4cUczcjlLMVp5Wjd6dnJQenk0enB4M09nMkV3ZWVGUWcwNStxWFNXRXE4ektid1d5MC94OG9SUzV1VHB1IiwiY3VzdG9tZXJfaWQiOiI2OGVmYTY2Zi02MDFmLTQ3NjYtOGQ4Yi0xYmE5Zjk0MDdkNTMiLCJlbWFpbCI6ImhpdGhpc2lzdmVkYW5zaEBnbWFpbC5jb20iLCJpYXQiOjE2NjQ3OTIwMjgsImV4cCI6MTY2NDc5MjkyOH0.tl43qIcQUzvRP68LDkFEVeyR9tmDjJp8WxmOXz3nc4I",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customerName\": \"Optional String\",\n    \"companyName\": \"Optional String\",\n    \"mobileNo\": \"Optional String\",\n    \"designation\": \"Optional String\",\n    \"country\": \"Optional String\",\n    \"companyUrl\": \"Optional String\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/update-details",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"update-details"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Question",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sectionName\": \"first\",\n    \"quesNo\": 1,\n    \"questionDescription\": \"Sample Question\",\n    \"choiceDetails\": [\n      {\n        \"key\": \"a\",\n        \"value\": \"< 100 Cr\",\n        \"rank\": \"1\"\n      },\n       {\n        \"key\": \"b\",\n        \"value\": \"< 500 Cr\",\n        \"rank\": \"1\"\n      },\n       {\n        \"key\": \"c\",\n        \"value\": \"< 1000 Cr\",\n        \"rank\": \"1\"\n      },\n       {\n        \"key\": \"d\",\n        \"value\": \"< 5000 Cr\",\n        \"rank\": \"1\"\n      }\n      , {\n        \"key\": \"e\",\n        \"value\": \"> 5000 Cr\",\n        \"rank\": \"1\"\n      }\n    ],\n    \"createdBy\": \"Admin\",\n    \"questionHelp\": \"Anything\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5019/edify/user/add-question",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"user",
+						"add-question"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Question",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5019/edify/user/get-question/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"user",
+						"get-question",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Question",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sectionName\": \"first\",\n    \"subSectionName\": \"one\",\n    \"quesNo\": 1,\n    \"questionDescription\": \"Sample Question\",\n    \"choiceDetails\": [\n      {\n        \"key\": \"a\",\n        \"value\": \"< 100 Cr\",\n        \"rank\": \"1\"\n      },\n       {\n        \"key\": \"b\",\n        \"value\": \"< 500 Cr\",\n        \"rank\": \"1\"\n      },\n       {\n        \"key\": \"c\",\n        \"value\": \"< 1000 Cr\",\n        \"rank\": \"1\"\n      },\n       {\n        \"key\": \"d\",\n        \"value\": \"< 5000 Cr\",\n        \"rank\": \"1\"\n      }\n      , {\n        \"key\": \"e\",\n        \"value\": \"> 5000 Cr\",\n        \"rank\": \"1\"\n      }\n    ],\n    \"updatedBy\": \"Admin\",\n    \"questionHelp\": \"Anything\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5019/edify/user/update-question/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"user",
+						"update-question",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Question",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5019/edify/user/delete-question/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"user",
+						"delete-question",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Questions By Section Name",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sectionName\": \"Not Optional String\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/get-questions-by-section-name",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"get-questions-by-section-name"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Questions By Section and Sub-Section",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sectionName\": \"Not Optional String\",\n    \"subSectionName\": \"Not Optional String\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/get-questions-by-section-and-subsection",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"get-questions-by-section-and-subsection"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Questions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/all-questions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"all-questions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get ODM questions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/get-odm-questions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"get-odm-questions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get FM questions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/get-fm-questions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"get-fm-questions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Current Answers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/get-current-answers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"get-current-answers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Submit Survey Answers",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWZyZXNoVG9rZW4iOiJoN3p3bVpYaVo4elBOWUVvN2VYL1QrS2tacHBDNWZ4S2dOQUtGNGxhTkNGQ3h5N0tCckFJVmprdjF5c05ySEE3bU01emovSFh1dlV0Zlp4WllPMXEvRmJVdkZ0SzUvZFc4THJmOUhMWHUyY3RFTGYyY2dsTVUyZUV6dDlRZGtnTExFSXNkQWtldmVFMTlTZEJTTFNEemxER2p3TDVaR0xDQTZLcE9iVEp4RnpXNFNIenhLUG0wWXc4SFcxdUpjWlBReEN4cUczcjlLMVp5Wjd6dnJQenk0enB4M09nMkV3ZWVGUWcwNStxWFNXRXE4ektid1d5MC94OG9SUzV1VHB1IiwiY3VzdG9tZXJfaWQiOiI2OGVmYTY2Zi02MDFmLTQ3NjYtOGQ4Yi0xYmE5Zjk0MDdkNTMiLCJlbWFpbCI6ImhpdGhpc2lzdmVkYW5zaEBnbWFpbC5jb20iLCJpYXQiOjE2NjQ3OTIwMjgsImV4cCI6MTY2NDc5MjkyOH0.tl43qIcQUzvRP68LDkFEVeyR9tmDjJp8WxmOXz3nc4I",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"surveyAnswers\": {\n        \"1\": \"a\",\n        \"2\": \"a\",\n        \"3\": \"a\",\n        \"4\": \"a\",\n        \"5\": \"a\",\n        \"6\": \"a\",\n        \"7\": \"a\",\n        \"8\": \"a\",\n        \"9\": \"a\",\n        \"10\": \"a\",\n        \"11\": \"a\",\n        \"12\": \"a\",\n        \"13\": \"a\",\n        \"14\": \"a\",\n        \"15\": \"a\",\n        \"16\": \"a\",\n        \"17\": \"a\",\n        \"18\": \"a\"\n    },\n    \"isComplete\": true,\n    \"currentSection\": \"finished\",\n    \"currentQuesNumber\": 18\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5019/edify/customer/submit-survey-answers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5019",
+					"path": [
+						"edify",
+						"customer",
+						"submit-survey-answers"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
