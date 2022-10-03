@@ -31,6 +31,7 @@ const deleteQuestion = require("./handlers/user/deleteQuestion");
 const getQuestionsBySectionName = require("./handlers/customer/getQuestionsBySectionName");
 const getQuestionsBySectionAndSubsection = require("./handlers/customer/getQuestionsBySectionAndSubsection");
 const getAllQuestions = require("./handlers/customer/getAllQuestions");
+const getCDQuestions = require("./handlers/customer/getCDQuestions");
 const getODMQuestions = require("./handlers/customer/getODMQuestions");
 const getFMQuestions = require("./handlers/customer/getFMQuestions");
 const submitSurveyAnswers = require("./handlers/customer/submitSurveyAnswers");
@@ -62,6 +63,8 @@ app.post("/edify/customer/get-questions-by-section-name", getQuestionsBySectionN
 app.post("/edify/customer/get-questions-by-section-and-subsection", getQuestionsBySectionAndSubsection);
 
 app.get("/edify/customer/all-questions", getAllQuestions);
+
+app.get("/edify/customer/get-cd-questions", getCDQuestions);
 
 app.get("/edify/customer/get-odm-questions", getODMQuestions);
 

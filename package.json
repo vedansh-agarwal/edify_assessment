@@ -1,13 +1,13 @@
 {
-  "name": "emp_assmnt",
+  "name": "edify_assessment",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Server side code for C4i4's Digital Maturity Assessment Test",
+  "main": "server.js",
   "scripts": {
     "start": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Vedansh Agarwal",
   "license": "ISC",
   "dependencies": {
     "aes256": "^1.1.0",
